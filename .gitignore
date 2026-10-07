@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+node_modules/
+.venv/
+.env
+.env.*
+*.log
+*.gguf
+*.safetensors
+*.ckpt
+*.pth
+input/
+output/
+models/
+credentials*
+*token*.txt

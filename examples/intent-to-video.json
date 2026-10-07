@@ -1,0 +1,35 @@
+{
+  "id": "d77f27fd-b039-4e26-a40f-2a7ceba458d4",
+  "revision": 0,
+  "last_node_id": 1,
+  "last_link_id": 0,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "H3FullStack",
+      "pos": [160, 100],
+      "size": [660, 1240],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {"name": "Video", "type": "VIDEO", "links": null},
+        {"name": "Upscaled Video", "type": "VIDEO", "links": null},
+        {"name": "Optimized Prompt", "type": "STRING", "links": null}
+      ],
+      "properties": {"Node name for S&R": "H3FullStack"},
+      "widgets_values": [
+        "{\"version\":2,\"mode\":\"auto\",\"media\":[],\"loras\":[],\"seconds\":5,\"aspect\":\"16:9\",\"megapixels\":0.5,\"multiple\":32,\"steps\":20,\"sampler\":\"res_multistep\",\"scheduler\":\"simple\",\"optimize_on_run\":true,\"generate_after_optimization\":false,\"use_chinese_prompt\":true,\"use_reviewed_prompt\":false,\"reviewed_prompt\":\"\",\"filename\":\"Coffee\",\"output_dir\":\"H3FullStack\"}",
+        "晨光里的咖啡杯，杯口蒸汽轻轻上升，窗边的薄纱微微晃动。镜头缓慢靠近，安静自然，不要人物、对白或画面文字。",
+        42,
+        "randomize"
+      ]
+    }
+  ],
+  "links": [],
+  "groups": [],
+  "config": {},
+  "extra": {"ds": {"scale": 0.7, "offset": [80, 0]}},
+  "version": 0.4
+}

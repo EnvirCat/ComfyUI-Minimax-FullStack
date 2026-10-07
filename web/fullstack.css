@@ -1,0 +1,60 @@
+.h3fs{--h3-line:#47575b;--h3-accent:#6acbd0;--h3-field:#151d20;box-sizing:border-box;color:#e6edef;background:#202a2d;font:14px/1.5 'Segoe UI',sans-serif;width:100%;min-width:620px;height:100%;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:16px;border:1px solid var(--h3-line);border-radius:8px}
+.h3fs *{box-sizing:border-box}
+.h3fs details{display:block;border-top:1px solid var(--h3-line);padding:10px 0;margin:0}
+.h3fs>.h3-block:first-child{border-top:0}
+.h3fs summary{font-weight:600;cursor:pointer;min-height:34px;line-height:34px}
+.h3fs>.h3-block>summary{font-size:20px;color:var(--h3-accent)}
+.h3fs h2{font-size:18px;color:#e6edef;margin:0 0 10px;font-weight:600;user-select:none}
+.h3fs h3{font-size:14px;margin:14px 0 8px}
+.h3fs .h3-image-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.h3fs .h3-video-grid{display:block}
+.h3fs .h3-audio-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.h3fs .h3-media-group .h3-media{margin:0;padding:8px;min-width:0}
+.h3fs .h3-image-grid .h3-media :is(img,.h3-empty){height:105px;min-height:105px;line-height:105px;margin:7px 0;object-fit:cover}
+.h3fs .h3-image-grid button{font-size:12px;padding:3px 5px;min-height:27px;margin-top:5px;margin-bottom:0}
+.h3fs .h3-image-grid label{font-size:12px;margin:7px 0 0}
+.h3fs .h3-image-grid input{padding:4px;min-height:28px;font-size:12px}
+.h3fs .h3-image-grid .h3-filename{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;font-size:10px}
+.h3fs label{display:block;margin:10px 0}
+.h3fs input,.h3fs select,.h3fs textarea,.h3fs button{display:block;width:100%;max-width:100%;font:inherit;color:inherit;background:var(--h3-field);border:1px solid var(--h3-line);border-radius:5px;padding:8px 10px;min-height:36px;margin-top:6px}
+.h3fs input[hidden]{display:none}
+.h3fs select{text-overflow:ellipsis}
+.h3fs textarea{min-height:160px;line-height:1.6;resize:vertical}
+.h3fs .h3-optimized textarea{min-height:180px;max-height:480px;color:#d7e9eb;cursor:text}
+.h3fs select[hidden]{display:none}
+.h3fs button{cursor:pointer;margin-bottom:8px}
+.h3fs button:hover{border-color:var(--h3-accent)}
+.h3fs :is(input,select,textarea,button,summary):focus-visible{outline:2px solid var(--h3-accent);outline-offset:2px}
+.h3fs :disabled{opacity:.45;cursor:default}
+.h3fs .h3-check input{width:20px;height:20px;min-height:20px;padding:0;accent-color:var(--h3-accent)}
+.h3fs .h3-lora,.h3fs .h3-media{display:block;padding:12px;border:1px solid var(--h3-line);border-radius:6px;margin:10px 0;background:#192225}
+.h3fs .h3-lora{display:grid;grid-template-columns:24px minmax(0,1fr) 76px 28px;gap:8px;align-items:center;padding:8px}
+.h3fs .h3-lora :is(input,select,button){margin:0;min-width:0}
+.h3fs .h3-lora input[type=checkbox]{width:20px;min-height:20px;height:20px;padding:0;accent-color:var(--h3-accent)}
+.h3fs .h3-lora select{padding:7px 8px;font-size:12px}
+.h3fs .h3-lora input[type=number]{padding:7px 5px;font-variant-numeric:tabular-nums}
+.h3fs .h3-card-header{display:flex;align-items:center;gap:6px;min-height:24px}
+.h3fs .h3-media-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+.h3fs button.h3-icon{display:grid;place-items:center;width:28px;height:28px;min-height:28px;padding:5px;margin:0}
+.h3fs .h3-icon svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.h3fs button.h3-port{display:grid;place-items:center;width:24px;height:24px;min-height:24px;padding:0;margin:0;flex:none;background:transparent;border-color:transparent;cursor:crosshair}
+.h3fs .h3-port::before{content:'';width:10px;height:10px;border:2px solid #71c6f6;border-radius:50%;background:#192225}
+.h3fs .h3-text-port::before{border-color:#d6a4ee}
+.h3fs .h3-port[data-connected=true]::before{background:#71c6f6}
+.h3fs .h3-text-port[data-connected=true]::before{background:#d6a4ee}
+.h3fs .h3-prompt-field{position:relative;padding-top:0}
+.h3fs .h3-prompt-field>.h3-port{display:inline-grid;vertical-align:middle;margin-right:6px}
+.h3fs .h3-media.h3-disabled{opacity:.28;filter:grayscale(1)}
+.h3fs .h3-media.h3-disabled :is(img,video,audio,.h3-empty){pointer-events:none}
+.h3fs .h3-media :is(img,video){display:block;width:100%;height:180px;object-fit:contain;background:#0f1416;margin:10px 0;border-radius:4px}
+.h3fs .h3-empty{display:block;background:#0f1416;border:1px dashed #465f65;border-radius:4px;min-height:90px;line-height:90px;text-align:center;cursor:pointer;margin:10px 0;color:#9bb0b5}
+.h3fs .h3-filename{overflow-wrap:anywhere;color:#a9bec2;font-size:12px;margin-top:6px}
+.h3fs audio{display:block;width:100%;margin:10px 0}
+.h3fs .h3-size-preview{display:block;padding:8px 12px;color:#d6efdc;background:#203c2d;border:1px solid #476f54;border-radius:5px;margin:12px 0;text-align:center;font-variant-numeric:tabular-nums}
+.h3fs .h3-preview{display:block;background:#0f1416;position:relative;border-radius:5px;overflow:hidden;min-height:120px;margin:12px 0}
+.h3fs .h3-preview[hidden]{display:none}
+.h3fs .h3-preview :is(img,video){position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.h3fs .h3-stats{font:12px/1.6 monospace;color:#aac1c6}
+.h3fs .h3-status{display:block;color:var(--h3-accent);overflow-wrap:anywhere}
+.h3fs .h3-status[hidden]{display:none}
+.h3fs .h3-error{color:#ffc0b5}

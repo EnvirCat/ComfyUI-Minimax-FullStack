@@ -1,0 +1,7 @@
+# Uses the host ComfyUI environment. Do not replace its torch/CUDA packages.
+numpy
+Pillow
+av
+aiohttp
+# llama-cpp-vlm, KJNodes, RIFE and DLSS are separate ComfyUI node dependencies.
+# Follow their own installation guides; no llama.cpp wheel is forced here.
