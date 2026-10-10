@@ -12,7 +12,7 @@ Date / 日期：2026-10-10。Environment / 环境：Windows portable ComfyUI, em
 
 A minimal neutral 128×128 five-frame batch and stereo silent audio ran through installed **RIFE VFI → H3FSFinish → native SaveVideo** for base and Lanczos 2× output. H3FSFinish and both attached saves returned standard output entries with native asset IDs. The files contain ten video frames at 48fps, preserved audio and correct base/upscaled dimensions. This smoke test exercises finishing/export, **not H3 diffusion or artistic quality**.
 
-The native asset subsystem was enabled and prior base/upscaled MP4s were discovered by its output scan and verified through the native asset API. The browser API settings entry was checked; the native Assets sidebar still requires separate frontend verification. Screenshots are from a neutral/reference-workflow verification view, not private user generations.
+The native asset subsystem was enabled and prior base/upscaled MP4s were discovered by its output scan and verified through the native asset API. A fresh browser session verified the API settings entry and a newly completed video in the native Assets sidebar. Screenshots are from a neutral/reference-workflow verification view, not private user generations.
 
 A first test submission used the wrong dynamic-combo API shape for the current native SaveVideo and failed; the fixture was corrected to the native flat `format` / `format.codec` API inputs and rerun. The successful test used a new seed to avoid reusing cached finishing results.
 
