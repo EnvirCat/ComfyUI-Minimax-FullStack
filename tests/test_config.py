@@ -3,8 +3,8 @@ import json
 from pathlib import Path
 import unittest
 
-spec = importlib.util.spec_from_file_location('h3_config', Path(__file__).parents[1] / 'config.py')
-m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+from test_pipeline import m as runtime
+m = importlib.import_module('fullstack_test.config')
 
 class ConfigTests(unittest.TestCase):
     def cfg(self, **kwargs): return m.parse_config(kwargs)
@@ -48,7 +48,7 @@ class ConfigTests(unittest.TestCase):
                 self.assertEqual((w,h),(round(a*scale/32)*32,round(b*scale/32)*32))
     def test_migration_and_audio_slots(self):
         c=self.cfg(version=1,profile='DMAD 4-step',dmad_lora='dmad.safetensors')
-        self.assertEqual(c['version'],2);self.assertEqual(c['loras'][0]['weight'],1.)
+        self.assertEqual(c['version'],3);self.assertEqual(c['loras'][0]['weight'],1.)
         self.assertEqual(m.parse_config(c)['loras'],c['loras'])
         with self.assertRaises(ValueError):self.cfg(media=[{'kind':'audio','path':f'{i}.wav'} for i in range(3)])
         with self.assertRaises(ValueError):self.cfg(media=[{'kind':'image','path':'a.png','slot':0},{'kind':'image','path':'b.png','slot':0}])

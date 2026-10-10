@@ -9,6 +9,10 @@ Thank you to the authors and communities whose work makes this integrated worksp
 | [MiniMax H3 — MiniMax](https://github.com/MiniMax-AI/MiniMax-H3) | H3 model ecosystem and official prompting guidance / H3 模型生态与官方提示词规范 |
 | [Official base prompt guide / 官方基础文档](https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/docs/VIDEO_PROMPT_WRITING_GUIDE_base_en.md) | T2V/keyframe structure used as the basis of the compact base contract / 基础与关键帧规范来源 |
 | [Official reference prompt guide / 官方参考文档](https://huggingface.co/MiniMaxAI/MiniMax-H3/blob/main/docs/VIDEO_PROMPT_WRITING_GUIDE_ref_en.md) | Subject mapping, retention and six-field reference structure / 主体映射、保留关系与六段结构来源 |
+| [H3 Prompt Enhancer — T8mars](https://github.com/T8mars/comfyui-minimax-h3-prompt-enhancer-T8) | Reference-aware prompt-rule study and workflow inspiration, not a bundled runtime / 多参提示词规则学习与流程参考，非捆绑运行依赖 |
+| [Krea2 model release — Comfy Org](https://huggingface.co/Comfy-Org/Krea-2) | Krea2 image model ecosystem / Krea2 生图模型生态 |
+| [Krea2 conditioning — huwhitememes](https://github.com/huwhitememes/comfyui-krea2-conditioning) | Installed ConditioningKrea2Rebalance interface / Krea2 条件重平衡接口 |
+| [Qwen Image 2.1 — Comfy Org distribution](https://huggingface.co/Comfy-Org/Qwen-Image-2.1) | Qwen image generation model ecosystem / Qwen 生图模型生态 |
 | [ComfyUI — Comfy Org and contributors](https://github.com/Comfy-Org/ComfyUI) | Native H3 loading/conditioning/sampling, audio/video APIs, resolution formula and attention selection / 原生 H3、音视频与尺寸/注意力接口 |
 | [ComfyUI-KJNodes — kijai](https://github.com/kijai/ComfyUI-KJNodes) | Model Preview Override, H3 Low VRAM/Chunk Feed Forward and selected Sage patches / 预览、低显存、FF 分块与 Sage 补丁 |
 | [ComfyUI-llama-cpp_vlm — lihaoyun6](https://github.com/lihaoyun6/ComfyUI-llama-cpp_vlm) | Local GGUF/VLM loader, multimodal inference and native model lifecycle / 本地加载、多模态推理与模型生命周期 |

@@ -107,6 +107,10 @@ def prepare(c, frames, reference_image=None, reference_video=None, reference_aud
                 tensor = image_inputs.get(f'image_{i+1}')
                 if tensor is None and i not in slots: continue
                 item = slots.get(i)
+                if tensor is not None and getattr(tensor, '_h3fs_generated', None) and item:
+                    # Existing / explicitly accepted saved image wins. New candidates stay previews
+                    # until the user applies them. Ordinary LoadImage/Batch inputs are unaffected.
+                    tensor = None
                 tensor = image_tensor(item) if tensor is None else tensor
                 # A connected IMAGE batch fills consecutive active image slots.
                 for frame in tensor:

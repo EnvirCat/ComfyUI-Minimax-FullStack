@@ -14,6 +14,9 @@ COMFY=Path(os.environ.get('COMFYUI_ROOT', str(ROOT.parents[1])))
 sys.path.insert(0,str(COMFY))
 package=types.ModuleType('fullstack_test');package.__path__=[str(ROOT)];sys.modules[package.__name__]=package
 m=importlib.import_module('fullstack_test.nodes')
+# Existing native-owner unit tests deliberately exercise the in-process worker
+# implementation with mocked loaders. Production always uses the isolated path.
+m.ISOLATE_NATIVE=False
 
 class GraphTests(unittest.TestCase):
     def run_graph(self, **changes):
@@ -88,8 +91,9 @@ class GraphTests(unittest.TestCase):
         self.assertNotIn('selection',missing)
     def test_preview_has_no_audio(self):
         graph=self.run_graph(preview_audio=True)['expand']
-        args=next(n['inputs'] for n in graph.values() if n['class_type']=='ModelPreviewOverrideKJ')
+        args=next(n['inputs'] for n in graph.values() if n['class_type']=='H3FSTimelinePreview')
         self.assertNotIn('audio_vae',args)
+        self.assertEqual(args['frame_count'],124)
 
 class MediaModeTests(unittest.TestCase):
     def test_disabled_media_preserved(self):
@@ -113,12 +117,33 @@ class MediaModeTests(unittest.TestCase):
         self.assertTrue(torch.equal(out['images']['ref_image_0'],tensor))
 
 class SaveTests(unittest.TestCase):
+    def test_saved_videos_use_native_asset_entries_and_file_backed_outputs(self):
+        import torch
+        from comfy_api.latest import InputImpl
+        with tempfile.TemporaryDirectory(prefix='h3fs-save-test-') as out:
+            c={**m.DEFAULTS,'output_dir':out,'filename':'test','upscale':True,'upscale_method':'Lanczos'}
+            with patch.object(m,'notify'),patch.object(m.mm,'unload_all_models'),patch.object(m.mm,'soft_empty_cache'),patch.object(m,'preview_index_path',return_value=Path(out)/'index.json'),patch.object(m.folder_paths,'get_output_directory',return_value=out):
+                finished=m.H3FSFinish().run(torch.zeros(5,64,96,3),None,json.dumps(c),'Test',42,'test')
+            self.assertEqual(len(finished['ui']['images']),2)
+            self.assertTrue(all(f['type']=='output' for f in finished['ui']['images']))
+            self.assertIsInstance(finished['result'][0],InputImpl.VideoFromFile)
+            self.assertIsInstance(finished['result'][1],InputImpl.VideoFromFile)
+    def test_cancelled_writer_never_publishes_partial_mp4(self):
+        import torch
+        from fullstack_test.video_output import encode_mp4
+        with tempfile.TemporaryDirectory(prefix='h3fs-save-test-') as out:
+            path=Path(out)/'result.mp4'
+            with self.assertRaisesRegex(RuntimeError,'cancelled'):
+                encode_mp4(torch.zeros(5,64,96,3),None,24,path,18,cancel=lambda:(_ for _ in ()).throw(RuntimeError('cancelled')))
+            self.assertFalse(path.exists());self.assertEqual(list(Path(out).iterdir()),[])
     def test_disabled_upscale_blocks_downstream_save(self):
         import torch
         with tempfile.TemporaryDirectory(prefix='h3fs-save-test-') as out:
             c={**m.DEFAULTS,'output_dir':out,'filename':'test','upscale':False}
             with patch.object(m,'notify'),patch.object(m.mm,'unload_all_models'),patch.object(m.mm,'soft_empty_cache'),patch.object(m,'preview_index_path',return_value=Path(out)/'index.json'):
-                result=m.H3FSFinish().run(torch.zeros(24,64,96,3),None,json.dumps(c),'Test prompt',42,'test')
+                finished=m.H3FSFinish().run(torch.zeros(24,64,96,3),None,json.dumps(c),'Test prompt',42,'test')
+                result=finished['result'];self.assertEqual(len(finished['ui']['h3fs_files']),1)
+                self.assertEqual(finished['ui']['h3fs_final_prompt'],['Test prompt'])
             self.assertIsNotNone(result[0]);self.assertIsInstance(result[1],m.ExecutionBlocker)
             self.assertEqual(result[3],'');self.assertEqual(result[4],'Test prompt')
     def test_real_mp4_two_versions_and_audio(self):
@@ -129,7 +154,8 @@ class SaveTests(unittest.TestCase):
             images=torch.rand(24,64,96,3)
             audio={'waveform':torch.zeros(1,2,48000),'sample_rate':48000}
             with patch.object(m,'notify'),patch.object(m.mm,'unload_all_models'),patch.object(m.mm,'soft_empty_cache'),patch.object(m,'preview_index_path',return_value=Path(out)/'preview-index.json'):
-                result=m.H3FSFinish().run(images,audio,json.dumps(c),'Test prompt',42,'test')
+                finished=m.H3FSFinish().run(images,audio,json.dumps(c),'Test prompt',42,'test')
+                result=finished['result'];self.assertEqual(len(finished['ui']['h3fs_files']),2)
                 saved=dict(m.SAVED_FILES)
                 m.SAVED_FILES.clear();m.restore_preview_index()
                 self.assertTrue(all(Path(p).resolve() in m.SAVED_FILES.values() for p in result[2:4]))

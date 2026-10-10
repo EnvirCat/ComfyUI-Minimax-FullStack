@@ -1,42 +1,45 @@
-# Validation scope / 验收范围
+# Validation / 验收范围 · 2.9.0
 
-Release 2.2.0, 2026-10-07. Tested in an existing Windows ComfyUI environment with native H3 nodes, KJNodes and llama-cpp-vlm. This is not a promise of universal platform/package-version compatibility.
+Date / 日期：2026-10-10。Environment / 环境：Windows portable ComfyUI, embedded Python 3.13, Chromium browser. Results below distinguish automated checks from actual generation and untested integrations.
 
-## Current release
+## Automated / 自动化
 
-- 41 offline Python tests passed: config/frame alignment, invalid inputs, graph wiring, LoRAs, mutually exclusive attention paths, native DynamicCombo argument handling, prompt-only blocked video branches, actual tiny temporary MP4 saving, reference maps, compact contracts, tokenizer budget and model lifecycle.
-- 16 Node frontend tests passed: prompt display, connected Show Text, native video controls, version selection, late preview events, history isolation, reviewed-prompt reuse, invalidation and Chinese-switch persistence.
-- JavaScript syntax check passed.
-- The restarted local backend reported 2.2.0 with an empty queue. A separate harmless starter workflow loaded the real frontend; its Chinese checkbox toggled off/on correctly and a compact DMAD LoRA row accepted its model selection. Screenshots were captured without running generation or saving edits to the user's workflow.
-- Local model loading and vision inference are mocked in the new Chinese/lifecycle tests. No new GPU jobs were submitted for these changes. Actual Chinese-versus-English video quality and full-load VRAM handoff are **not** benchmarked.
-- Successful prompt-only retention, matching-config reuse, changed-budget reload, error cleanup, cleanup-before-direct-video and blocking video loading on cleanup failure are verified at the API/ordering level.
+- **221 Python unit tests**: configuration, H3 graph wiring, local-model lifecycle/worker failures, context/recovery, reference contracts and prompt quality checks, image/overall-reference planning, MP4 output/cancellation, and API transport/routing.
+- **86 frontend tests**: reference wiring and apply behavior, compact panels, prompt review/recovery, player timeline, one-click stage queueing, attached output closure and API modal/key isolation.
+- API cases use a local fake HTTP SSE/JSON server: hidden reasoning, truncation, auth-error redaction, cancellation, visual opt-in, OpenAI token fields, endpoint validation and Windows DPAPI scope. No real key is in the fixtures.
 
-## Earlier local smoke tests
+## Live export check / 实际导出验收
 
-Earlier versions successfully exercised low-resolution H3 T2V/reference generation, one-image vision prompting, one-image plus one-video prompting, RIFE 2× interpolation, Lanczos and DLSS 2× dual-video saving with audio. Harmless existing-video fixtures verified pause/seek and optimized text display without re-running a model.
+A minimal neutral 128×128 five-frame batch and stereo silent audio ran through installed **RIFE VFI → H3FSFinish → native SaveVideo** for base and Lanczos 2× output. H3FSFinish and both attached saves returned standard output entries with native asset IDs. The files contain ten video frames at 48fps, preserved audio and correct base/upscaled dimensions. This smoke test exercises finishing/export, **not H3 diffusion or artistic quality**.
 
-These are functional smoke tests, not controlled speed or visual-quality benchmarks. No general speedup ratio is advertised.
+The native asset subsystem was enabled and prior base/upscaled MP4s were discovered by its output scan and verified through the native asset API. The browser API settings entry was checked; the native Assets sidebar still requires separate frontend verification. Screenshots are from a neutral/reference-workflow verification view, not private user generations.
 
-## Not fully tested
+A first test submission used the wrong dynamic-combo API shape for the current native SaveVideo and failed; the fixture was corrected to the native flat `format` / `format.codec` API inputs and rerun. The successful test used a new seed to avoid reusing cached finishing results.
 
-Nine-image maximum-reference inference; all Sage/Sol kernels and driver combinations; maximum-resolution/long-duration clips; arbitrary third-party package revisions; non-Windows operation; audible transcription (not implemented); guaranteed identity adherence or unique batch prompts; native mouse-drag port gestures across all frontend revisions.
+## Not claimed / 未承诺的范围
 
-## Run the tests
+- No real paid API provider or remote vision model was called for this release; text-test success on a user's account does not establish vision or end-to-end video support.
+- No new full-resolution H3 generation was submitted for this export repair; it does not promise a measured speedup for every long clip, DLSS setting, disk or device.
+- DLSS uses its upstream implementation; this release's new streaming path was exercised with Lanczos, not DLSS.
+- Unit tests do not prove facial identity, exact image recreation, Chinese/English perceptual equivalence, untested quantization compatibility or the quality of generated prompts on every local model.
+- Crash recovery reuses complete saved stages, not partially sampled diffusion states. Files must still exist and inputs must match.
 
-Use the same Python environment as ComfyUI. A plugin checkout under `ComfyUI/custom_nodes` discovers the backend through its parent directories. For an independent checkout set `COMFYUI_ROOT` to the backend path, then run:
+## Reproduce / 复现
 
-```bash
-python -m unittest discover -s tests -p "test_*.py"
-node --test tests/test_frontend.cjs
-node --check web/fullstack.js
+From the plugin directory, with the real ComfyUI Python/environment:
+
+```powershell
+$env:COMFYUI_ROOT = 'C:\path\to\ComfyUI'
+python -m unittest discover -s tests -p 'test_*.py'
+node --test tests/test_frontend.cjs tests/test_image_generator_frontend.cjs tests/test_api_frontend.cjs
 ```
 
-The tests do not download models or enqueue generation. Pipeline tests import ComfyUI and create tiny video files in temporary directories. Configuration-only tests can run without ComfyUI:
+The Python tests import host ComfyUI APIs; they are not standalone in an empty Python environment. Node tests need a Node.js runtime; it is a test-only dependency, not required for normal plugin use.
 
-```bash
-python -m unittest discover -s tests -p test_config.py
+An explicit live test is available:
+
+```powershell
+python tests/validate_video_export.py --submit
 ```
 
-## 中文说明
-
-本次发布通过 41 项 Python 离线测试、16 项前端行为测试和 JS 语法检查。中文生成与 LLM 生命周期使用 mock 验证格式、调用参数及释放顺序，没有新增 GPU 生成任务，也没有中英文画质或高负载显存基准。历史实测包括低分辨率 H3、本地视觉提示词、插帧、两种放大和音轨保留；不能将功能冒烟测试宣传为普遍提速或画质保证。九图满负载、高分辨率长视频、全部内核/驱动组合以及跨平台仍需用户环境验证。
+It checks that the queue is empty, intentionally creates tiny test videos under `output/H3FullStack/export-smoke`, requires RIFE, and does not sample H3 or use private media. Run only when you want those test outputs.

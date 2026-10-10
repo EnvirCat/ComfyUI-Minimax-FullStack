@@ -8,7 +8,7 @@
       "id": 1,
       "type": "H3FullStack",
       "pos": [160, 100],
-      "size": [660, 1240],
+      "size": [660, 900],
       "flags": {},
       "order": 0,
       "mode": 0,
@@ -20,7 +20,7 @@
       ],
       "properties": {"Node name for S&R": "H3FullStack"},
       "widgets_values": [
-        "{\"version\":2,\"mode\":\"auto\",\"media\":[],\"loras\":[],\"seconds\":5,\"aspect\":\"16:9\",\"megapixels\":0.5,\"multiple\":32,\"steps\":20,\"sampler\":\"res_multistep\",\"scheduler\":\"simple\",\"optimize_on_run\":true,\"generate_after_optimization\":false,\"use_chinese_prompt\":true,\"use_reviewed_prompt\":false,\"reviewed_prompt\":\"\",\"filename\":\"Coffee\",\"output_dir\":\"H3FullStack\"}",
+        "{\"version\":3,\"mode\":\"auto\",\"media\":[],\"loras\":[],\"seconds\":5,\"aspect\":\"16:9\",\"megapixels\":0.5,\"multiple\":32,\"steps\":20,\"sampler\":\"res_multistep\",\"scheduler\":\"simple\",\"optimize_on_run\":true,\"generate_after_optimization\":false,\"use_chinese_prompt\":true,\"use_reviewed_prompt\":false,\"reviewed_prompt\":\"\",\"llm_backend\":\"local\",\"llm_api\":{},\"filename\":\"Coffee\",\"output_dir\":\"H3FullStack\"}",
         "晨光里的咖啡杯，杯口蒸汽轻轻上升，窗边的薄纱微微晃动。镜头缓慢靠近，安静自然，不要人物、对白或画面文字。",
         42,
         "randomize"

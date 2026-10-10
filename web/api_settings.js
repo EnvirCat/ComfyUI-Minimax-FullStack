@@ -1,0 +1,51 @@
+import { api } from '../../scripts/api.js';
+
+const el=(tag,text='')=>{const n=document.createElement(tag);n.textContent=text;return n;};
+
+export function openAPISettings(state,cfg,onSave=()=>{}) {
+  const zh=state.ui_language!=='en',t=(cn,en)=>zh?cn:en;
+  const defaults=cfg.api_defaults||{provider:'openai',base_url:'https://api.openai.com/v1',model:'',vision:false,local_vision:true,timeout:180,token_field:'auto',key_env:'',send_temperature:true};
+  const presets=cfg.api_presets||{};
+  const draft={...defaults,...state.llm_api};
+  const dialog=el('dialog');dialog.className='h3fs-modal h3-api-dialog';dialog.setAttribute('aria-label',t('提示词模型 · 本地 / API','Prompt model · Local / API'));
+  const head=el('div');head.className='h3-dialog-head';const title=el('h2',t('提示词模型 · 本地 / API','Prompt model · Local / API'));
+  const close=el('button',t('关闭','Close'));close.onclick=()=>dialog.close();head.append(title,close);
+  const body=el('div');body.className='h3fs h3-dialog-body';dialog.append(head,body);
+  for(const event of ['pointerdown','wheel','keydown'])dialog.addEventListener(event,e=>e.stopPropagation());
+  const field=(parent,label,value,choices=null,type='text')=>{const row=el('label',label),input=el(choices?'select':'input');input.setAttribute('aria-label',label);
+    if(choices)for(const [v,text] of choices){const option=el('option',text);option.value=v;input.append(option);}else input.type=type;
+    input.value=value??'';row.append(input);parent.append(row);return input;};
+  const backend=field(body,t('提示词生成方式','Prompt backend'),state.llm_backend||'local',[['local',t('本地模型（默认）','Local model (default)')],['api',t('API 模型','API model')]]);
+  const help=el('p',t('只控制提示词设计。图片和视频仍由本地 ComfyUI 生成。','Only prompt design uses this backend. Images and video are generated locally in ComfyUI.'));help.className='h3-help';body.append(help);
+  const apiBody=el('div');body.append(apiBody);
+  const provider=field(apiBody,t('供应商','Provider'),draft.provider,Object.entries(presets).map(([id,p])=>[id,p.label]));
+  const url=field(apiBody,t('接口地址（Base URL）','Base URL'),draft.base_url);url.placeholder='https://example.com/v1';
+  const model=field(apiBody,t('模型名称（按账号权限填写）','Model ID (from your account)'),draft.model);model.placeholder='API model ID';
+  const key=field(apiBody,t('API 密钥（留空保留已存密钥）','API key (blank keeps saved key)'),'',null,'password');key.autocomplete='new-password';key.spellcheck=false;
+  const keyInfo=el('p');keyInfo.className='h3-help';apiBody.append(keyInfo);
+  const check=(label,k)=>{const row=el('label',label);row.className='h3-check';const input=el('input');input.type='checkbox';input.checked=!!draft[k];input.setAttribute('aria-label',label);input.onchange=()=>draft[k]=input.checked;row.append(input);apiBody.append(row);return input;};
+  check(t('API 看图（会上传参考图 / 视频抽帧）','API vision (uploads reference images / sampled frames)'),'vision');
+  check(t('纯文本 API：使用本地视觉分析素材','Text API: analyze references with local vision'),'local_vision');
+  const privacy=el('p',t('未开启 API 看图时，图片不上传；本地分析得到的文字会发送到 API。Windows 密钥加密保存在 ComfyUI/user，不写入工作流。','With API vision off, images stay local; textual observations are sent to the API. Windows keys are encrypted under ComfyUI/user, never in the workflow.'));privacy.className='h3-help';apiBody.append(privacy);
+  const advanced=el('details');advanced.append(el('summary',t('高级连接参数','Advanced connection settings')));apiBody.append(advanced);
+  const env=field(advanced,t('密钥环境变量（可选，优先于保存的密钥）','Key environment variable (optional; overrides saved key)'),draft.key_env);
+  const timeout=field(advanced,t('总超时（秒，10–600）','Total timeout (seconds, 10–600)'),draft.timeout,null,'number');timeout.min=10;timeout.max=600;
+  const tokenField=field(advanced,t('输出预算字段','Output token field'),draft.token_field,[['auto',t('自动','Auto')],['max_tokens','max_tokens'],['max_completion_tokens','max_completion_tokens']]);
+  const temp=el('label',t('发送 Temperature（模型不支持时关闭）','Send temperature (disable if unsupported)')),tempInput=el('input');temp.className='h3-check';tempInput.type='checkbox';tempInput.checked=draft.send_temperature!==false;tempInput.onchange=()=>draft.send_temperature=tempInput.checked;temp.append(tempInput);advanced.append(temp);
+  const status=el('div');status.className='h3-status';status.setAttribute('role','status');body.append(status);
+  let busy=false;
+  const collect=()=>({...draft,provider:provider.value,base_url:url.value.trim(),model:model.value.trim(),key_env:env.value.trim(),timeout:Number(timeout.value),token_field:tokenField.value});
+  const request=async(path,value)=>{const r=await api.fetchApi(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(value)});const result=await r.json();if(!r.ok)throw Error(result.error||t('操作失败','Request failed'));return result;};
+  const refresh=async()=>{try{if(!url.value.trim())return;const result=await request('/h3fs/api/credentials',{settings:collect(),action:'status'});keyInfo.textContent=(result.has_key?t('此接口已有密钥。','A key is available for this endpoint.'):t('此接口尚无密钥。','No key for this endpoint.'))+' '+(result.storage==='windows-dpapi'?t('本机 Windows 加密存储。','Windows-encrypted local storage.'):t('此平台请使用环境变量。','Use an environment variable on this platform.'));}catch(e){keyInfo.textContent=e.message;}};
+  const save=async()=>{const c=collect();if(key.value){await request('/h3fs/api/credentials',{settings:c,action:'save',key:key.value});key.value='';}else if(c.base_url)await request('/h3fs/api/credentials',{settings:c,action:'status'});
+    state.llm_backend=backend.value;state.llm_api=c;onSave();await refresh();};
+  const run=async(action)=>{if(busy)return;busy=true;buttons.forEach(b=>b.disabled=true);status.classList.remove('h3-error');try{await action();}catch(e){status.textContent=e.message;status.classList.add('h3-error');}finally{busy=false;buttons.forEach(b=>b.disabled=false);}};
+  const actions=el('div');actions.className='h3fs h3-generator-run h3-api-actions';dialog.append(actions);
+  const saveButton=el('button',t('保存设置','Save settings'));saveButton.onclick=()=>run(async()=>{await save();status.textContent=t('设置已保存；密钥不会写入工作流。','Saved; the key is not written to the workflow.');});
+  const testButton=el('button',t('保存并测试文本连接','Save & test text connection'));testButton.onclick=()=>run(async()=>{await save();status.textContent=t('正在测试（仅文本，可能产生少量 API 费用）…','Testing (text only; a small API charge may apply)…');const result=await request('/h3fs/api/test',{settings:collect()});status.textContent=t('文本连接成功。未上传图片、未加入生成队列。','Text connection successful. No images uploaded or generation queued.');});
+  const clearButton=el('button',t('清除此接口密钥','Remove saved key'));clearButton.onclick=()=>run(async()=>{await request('/h3fs/api/credentials',{settings:collect(),action:'clear'});key.value='';await refresh();status.textContent=t('已移除本机保存的密钥；环境变量不受影响。','Saved key removed; environment variables are unchanged.');});
+  const buttons=[saveButton,testButton,clearButton];actions.append(...buttons);
+  provider.onchange=()=>{const p=presets[provider.value];draft.provider=provider.value;url.value=p?.base_url||'';model.value=p?.model||'';key.value='';refresh();};url.onchange=refresh;env.onchange=refresh;
+  const update=()=>{apiBody.hidden=backend.value==='local';testButton.hidden=clearButton.hidden=apiBody.hidden;};backend.onchange=update;update();
+  dialog.addEventListener('close',()=>{key.value='';dialog.remove();});document.body.append(dialog);dialog.showModal();refresh();return dialog;
+}

@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 DEFAULTS = {
-    "version": 2, "mode": "auto", "fl2va_model": "", "ref2va_model": "",
+    "version": 3, "ui_language": "zh", "mode": "auto", "fl2va_model": "", "ref2va_model": "",
     "text_encoder": "", "video_vae": "", "audio_vae": "", "loras": [],
     "resolution": "megapixels", "aspect": "16:9", "megapixels": 1.0, "multiple": 32,
     "width": 1344, "height": 768,
@@ -15,18 +15,28 @@ DEFAULTS = {
     "sampler": "euler", "scheduler": "simple", "shift_video": 12.0, "shift_audio": 2.0,
     "attention": "comfy kitchen attention", "low_vram": True, "head_chunks": 4,
     "chunk_ff": True, "ff_chunks": 2, "sol_tau": 1.3, "sol_start": 0.2, "sol_end": 1.0,
-    "preview": True, "preview_frames": 8, "preview_fps": 8, "preview_size": 768,
+    "preview": True, "preview_frames": 24, "preview_fps": 8, "preview_size": 512,
     "tiny_vae": "taeh3.safetensors", "preview_audio": False,
     "rife": False, "rife_model": "rife47.pth", "rife_multiplier": 2,
     "upscale": False, "upscale_method": "DLSS", "upscale_factor": 2.0,
     "output_dir": "H3FullStack", "filename": "H3", "crf": 18,
     "optimize_on_run": False, "generate_after_optimization": True,
-    "use_chinese_prompt": False,
+    "use_chinese_prompt": True,
     "use_reviewed_prompt": False, "reviewed_prompt": "",
+    "llm_backend": "local", "llm_api": {},
     "llm_model": "", "llm_mmproj": "None",
-    "llm_vision": True, "llm_handler": "Qwen3.8", "llm_ctx": 8192,
+    "llm_vision": True, "llm_handler": "Qwen3.8", "llm_ctx": 8192, "llm_auto_context": True,
     "llm_vram": 14, "llm_tokens": 1536, "llm_temperature": 0.65,
     "prompt_variation": True,
+    "auto_reference": False, "reference_one_click": False, "reference_job": "",
+    "reference_cards": [], "style_image": "", "style_text": "", "style_medium": "auto", "style_override": "",
+    "reference_prompt_version": 4,
+    "strict_person_reference": False, "scene_reference": "",
+    "person_profile_override": "", "scene_profile_override": "",
+    "image_engine": "qwen21", "image_model": "", "image_clip": "", "image_vae": "",
+    "image_loras": [], "image_steps": 25, "image_megapixels": 1.0,
+    "image_cfg": 1.0, "image_seed": 42,
+    "global_reference": {"enabled": False, "image": "", "person": False, "action": "video", "job_id": "", "cards": [], "image_settings": {}, "profiles": {}},
 }
 ASPECTS = {k: tuple(map(int, k.split(":"))) for k in
            ("1:1", "2:3", "3:2", "3:4", "4:3", "9:16", "16:9", "21:9", "9:21", "4:5", "5:4")}
@@ -46,6 +56,7 @@ def number(value, label, minimum, maximum, integer=False):
     return int(n) if integer else n
 
 def geometry(c):
+    if c.get('aspect') not in ASPECTS: raise ValueError('Unknown aspect ratio')
     if c["resolution"] == "megapixels":
         a, b = ASPECTS[c['aspect']]
         mp = number(c['megapixels'], 'Megapixels', .1, 16)
@@ -84,7 +95,12 @@ def parse_config(raw):
         raise ValueError("Settings must be an object")
     c = copy.deepcopy(DEFAULTS)
     c.update({k: v for k, v in supplied.items() if k in DEFAULTS})
+    from .llm_api import settings as api_settings
+    if c['llm_backend'] not in ('local','api'): raise ValueError('Unknown prompt backend')
+    c['llm_api'] = api_settings(c['llm_api'])
     c['mode'] = {'Auto':'auto', 'T2V':'text', 'I2V':'first_last', 'REF':'reference'}.get(c['mode'], c['mode'])
+    from .global_reference import validate_global
+    c['global_reference'] = validate_global(c['global_reference'])
     # Migrate the previous preset once. From v2 onward steps are independent
     # and DMAD is an ordinary editable LoRA, never an implicit model patch.
     if supplied.get('version', 1) < 2:
@@ -95,7 +111,12 @@ def parse_config(raw):
             w, h, _ = geometry(c)
             c.update(resolution='megapixels', megapixels=max(.1,w*h/(1024*1024)), multiple=32)
         c['llm_vision'] = True
-    c.update(version=2, profile='custom', preview_audio=False)
+    c.update(version=3, profile='custom', preview_audio=False)
+    if c['ui_language'] not in ('zh', 'en'): raise ValueError('Unknown interface language')
+    from .reference_config import validate_reference_config
+    validate_reference_config(c)
+    if not isinstance(c['llm_auto_context'], bool):
+        raise ValueError('Auto Context Length must be a boolean')
     if c["mode"] not in ("auto", "text", "first_frame", "first_last", "reference"):
         raise ValueError("Unknown H3 mode")
     if c["profile"] not in ("DMAD 4-step", "standard", "custom"):
